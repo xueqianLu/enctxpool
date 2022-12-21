@@ -2,8 +2,9 @@ syntax = "proto3";
 
 package encservice.v1;
 
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/any.proto";
+import "google/protobuf/empty.proto";
+//import "google/protobuf/timestamp.proto";
+//import "google/protobuf/any.proto";
 import "encservice/v1/request_response.proto";
 
 service EncService {
