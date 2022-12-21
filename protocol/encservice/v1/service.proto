@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package encservice.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+import "encservice/v1/request_response.proto";
+
+service EncService {
+    rpc HealthCheck(google.protobuf.Empty) returns (HealthCheckResponse) {}
+    rpc AddTx(AddTxRequest) returns (AddTxResponse) {}
+    rpc Status(StatusRequest) returns (StatusResponse) {}
+    rpc Reset(ResetRequest) returns (ResetResponse) {}
+    rpc Pending(PendingRequest) returns (PendingResponse) {}
+}

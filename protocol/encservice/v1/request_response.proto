@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package encservice.v1;
+
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+message HealthCheckResponse {
+  bool status = 1;
+  bytes error = 2;
+}
+
+message AddTxRequest {
+    bytes txdata = 1;
+}
+
+message AddTxResponse {
+    bytes txhash = 1;
+    string error = 2;
+}
+
+message StatusRequest {}
+
+message StatusResponse {
+    uint64 pending = 1;
+    uint64 queue   = 2;
+}
+
+message ResetRequest {}
+message ResetResponse {
+    string error = 1;
+}
+
+message PendingRequest {}
+
+message PendingResponse {
+    repeated bytes txs = 1;
+}
