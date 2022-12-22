@@ -7,6 +7,7 @@ BIN=enctxpool
 .PHONY: all proto build deps clean
 
 all:
+    @go build -o=${BIN} ./cmd/enctxpool
 
 build: $(PROTO_GO_FILES)
 	@buf build
