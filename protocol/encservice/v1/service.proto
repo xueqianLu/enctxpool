@@ -14,3 +14,10 @@ service EncService {
     rpc Reset(ResetRequest) returns (ResetResponse) {}
     rpc Pending(PendingRequest) returns (PendingResponse) {}
 }
+
+
+service ChainService {
+    rpc GetBalance(BalanceRequest) returns (BalanceResponse) {}
+    rpc GetNonce(NonceRequest) returns (NonceResponse) {}
+    rpc LatestHeader(LatestHeaderRequest) returns (LatestHeaderResponse) {}
+}

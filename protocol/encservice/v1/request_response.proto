@@ -36,3 +36,27 @@ message PendingRequest {}
 message PendingResponse {
     repeated bytes txs = 1;
 }
+
+message BalanceRequest {
+    bytes address = 1;
+    bytes block_num = 2;
+}
+
+message BalanceResponse {
+    bytes balance = 1;
+}
+
+message NonceRequest {
+    bytes address = 1;
+    bytes block_num = 2;
+}
+
+message NonceResponse {
+    bytes nonce = 1;
+}
+
+message LatestHeaderRequest { }
+message LatestHeaderResponse {
+    bytes block_num = 1;
+    bytes header_json = 2;
+}

@@ -4,10 +4,12 @@ PROTO_GO_FILES = $(shell find . -path -prune -o -type f -name '*.pb.go' -print |
 DEST=${PWD}
 BIN=enctxpool
 
-.PHONY: all proto build deps clean
+.PHONY: all bin proto build deps clean
 
-all:
-    @go build -o=${BIN} ./cmd/enctxpool
+all: proto bin
+
+bin:
+	go build -o=${BIN} ./cmd/enctxpool
 
 build: $(PROTO_GO_FILES)
 	@buf build

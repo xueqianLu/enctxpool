@@ -248,3 +248,161 @@ var EncService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "encservice/v1/service.proto",
 }
+
+// ChainServiceClient is the client API for ChainService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type ChainServiceClient interface {
+	GetBalance(ctx context.Context, in *BalanceRequest, opts ...grpc.CallOption) (*BalanceResponse, error)
+	GetNonce(ctx context.Context, in *NonceRequest, opts ...grpc.CallOption) (*NonceResponse, error)
+	LatestHeader(ctx context.Context, in *LatestHeaderRequest, opts ...grpc.CallOption) (*LatestHeaderResponse, error)
+}
+
+type chainServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewChainServiceClient(cc grpc.ClientConnInterface) ChainServiceClient {
+	return &chainServiceClient{cc}
+}
+
+func (c *chainServiceClient) GetBalance(ctx context.Context, in *BalanceRequest, opts ...grpc.CallOption) (*BalanceResponse, error) {
+	out := new(BalanceResponse)
+	err := c.cc.Invoke(ctx, "/encservice.v1.ChainService/GetBalance", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *chainServiceClient) GetNonce(ctx context.Context, in *NonceRequest, opts ...grpc.CallOption) (*NonceResponse, error) {
+	out := new(NonceResponse)
+	err := c.cc.Invoke(ctx, "/encservice.v1.ChainService/GetNonce", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *chainServiceClient) LatestHeader(ctx context.Context, in *LatestHeaderRequest, opts ...grpc.CallOption) (*LatestHeaderResponse, error) {
+	out := new(LatestHeaderResponse)
+	err := c.cc.Invoke(ctx, "/encservice.v1.ChainService/LatestHeader", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// ChainServiceServer is the server API for ChainService service.
+// All implementations must embed UnimplementedChainServiceServer
+// for forward compatibility
+type ChainServiceServer interface {
+	GetBalance(context.Context, *BalanceRequest) (*BalanceResponse, error)
+	GetNonce(context.Context, *NonceRequest) (*NonceResponse, error)
+	LatestHeader(context.Context, *LatestHeaderRequest) (*LatestHeaderResponse, error)
+	mustEmbedUnimplementedChainServiceServer()
+}
+
+// UnimplementedChainServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedChainServiceServer struct {
+}
+
+func (UnimplementedChainServiceServer) GetBalance(context.Context, *BalanceRequest) (*BalanceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetBalance not implemented")
+}
+func (UnimplementedChainServiceServer) GetNonce(context.Context, *NonceRequest) (*NonceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNonce not implemented")
+}
+func (UnimplementedChainServiceServer) LatestHeader(context.Context, *LatestHeaderRequest) (*LatestHeaderResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LatestHeader not implemented")
+}
+func (UnimplementedChainServiceServer) mustEmbedUnimplementedChainServiceServer() {}
+
+// UnsafeChainServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ChainServiceServer will
+// result in compilation errors.
+type UnsafeChainServiceServer interface {
+	mustEmbedUnimplementedChainServiceServer()
+}
+
+func RegisterChainServiceServer(s grpc.ServiceRegistrar, srv ChainServiceServer) {
+	s.RegisterService(&ChainService_ServiceDesc, srv)
+}
+
+func _ChainService_GetBalance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BalanceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChainServiceServer).GetBalance(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/encservice.v1.ChainService/GetBalance",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChainServiceServer).GetBalance(ctx, req.(*BalanceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ChainService_GetNonce_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NonceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChainServiceServer).GetNonce(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/encservice.v1.ChainService/GetNonce",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChainServiceServer).GetNonce(ctx, req.(*NonceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ChainService_LatestHeader_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LatestHeaderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChainServiceServer).LatestHeader(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/encservice.v1.ChainService/LatestHeader",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChainServiceServer).LatestHeader(ctx, req.(*LatestHeaderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// ChainService_ServiceDesc is the grpc.ServiceDesc for ChainService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var ChainService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "encservice.v1.ChainService",
+	HandlerType: (*ChainServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetBalance",
+			Handler:    _ChainService_GetBalance_Handler,
+		},
+		{
+			MethodName: "GetNonce",
+			Handler:    _ChainService_GetNonce_Handler,
+		},
+		{
+			MethodName: "LatestHeader",
+			Handler:    _ChainService_LatestHeader_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "encservice/v1/service.proto",
+}
