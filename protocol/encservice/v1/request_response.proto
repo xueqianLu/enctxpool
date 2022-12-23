@@ -37,6 +37,15 @@ message PendingResponse {
     repeated bytes txs = 1;
 }
 
+message BlockRequest {
+    bytes block_hash = 1;
+    bytes block_num = 2;
+}
+
+message BlockResponse {
+    bytes block_data = 1;
+}
+
 message BalanceRequest {
     bytes address = 1;
     bytes block_num = 2;

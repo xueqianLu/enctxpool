@@ -17,6 +17,7 @@ service EncService {
 
 
 service ChainService {
+    rpc GetBlock(BlockRequest) returns (BlockResponse) {}
     rpc GetBalance(BalanceRequest) returns (BalanceResponse) {}
     rpc GetNonce(NonceRequest) returns (NonceResponse) {}
     rpc LatestHeader(LatestHeaderRequest) returns (LatestHeaderResponse) {}

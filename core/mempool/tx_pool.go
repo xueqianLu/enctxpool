@@ -3,6 +3,8 @@ package mempool
 import (
 	"errors"
 	"github.com/ethereum/go-ethereum/core"
+	encservicetype "github.com/xueqianLu/enctxpool/protocol/generate/encservice/v1"
+	"google.golang.org/grpc"
 	"math"
 	"math/big"
 	"sort"
@@ -18,6 +20,7 @@ import (
 	"github.com/ethereum/go-ethereum/event"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/params"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 const (
@@ -215,6 +218,9 @@ type TxPool struct {
 	initDoneCh      chan struct{}  // is closed once the pool is initialized (for tests)
 
 	changesSinceReorg int // A counter for how many drops we've performed in-between reorg.
+
+
+	chainclient encservicetype.ChainServiceClient
 }
 
 type txpoolResetRequest struct {
@@ -246,6 +252,11 @@ func NewTxPool(config TxPoolConfig, chainconfig *params.ChainConfig, chain block
 		initDoneCh:      make(chan struct{}),
 		gasPrice:        new(big.Int).SetUint64(config.PriceLimit),
 	}
+	client, err := grpc.Dial("127.0.0.1:9800", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Error("dial server failed", err)
+	}
+	pool.chainclient = encservicetype.NewChainServiceClient(client)
 	pool.locals = newAccountSet(pool.signer)
 	for _, addr := range config.Locals {
 		log.Info("Setting new local account", "address", addr)

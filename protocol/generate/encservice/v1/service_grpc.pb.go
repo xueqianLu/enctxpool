@@ -253,6 +253,7 @@ var EncService_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ChainServiceClient interface {
+	GetBlock(ctx context.Context, in *BlockRequest, opts ...grpc.CallOption) (*BlockResponse, error)
 	GetBalance(ctx context.Context, in *BalanceRequest, opts ...grpc.CallOption) (*BalanceResponse, error)
 	GetNonce(ctx context.Context, in *NonceRequest, opts ...grpc.CallOption) (*NonceResponse, error)
 	LatestHeader(ctx context.Context, in *LatestHeaderRequest, opts ...grpc.CallOption) (*LatestHeaderResponse, error)
@@ -264,6 +265,15 @@ type chainServiceClient struct {
 
 func NewChainServiceClient(cc grpc.ClientConnInterface) ChainServiceClient {
 	return &chainServiceClient{cc}
+}
+
+func (c *chainServiceClient) GetBlock(ctx context.Context, in *BlockRequest, opts ...grpc.CallOption) (*BlockResponse, error) {
+	out := new(BlockResponse)
+	err := c.cc.Invoke(ctx, "/encservice.v1.ChainService/GetBlock", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *chainServiceClient) GetBalance(ctx context.Context, in *BalanceRequest, opts ...grpc.CallOption) (*BalanceResponse, error) {
@@ -297,6 +307,7 @@ func (c *chainServiceClient) LatestHeader(ctx context.Context, in *LatestHeaderR
 // All implementations must embed UnimplementedChainServiceServer
 // for forward compatibility
 type ChainServiceServer interface {
+	GetBlock(context.Context, *BlockRequest) (*BlockResponse, error)
 	GetBalance(context.Context, *BalanceRequest) (*BalanceResponse, error)
 	GetNonce(context.Context, *NonceRequest) (*NonceResponse, error)
 	LatestHeader(context.Context, *LatestHeaderRequest) (*LatestHeaderResponse, error)
@@ -307,6 +318,9 @@ type ChainServiceServer interface {
 type UnimplementedChainServiceServer struct {
 }
 
+func (UnimplementedChainServiceServer) GetBlock(context.Context, *BlockRequest) (*BlockResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetBlock not implemented")
+}
 func (UnimplementedChainServiceServer) GetBalance(context.Context, *BalanceRequest) (*BalanceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetBalance not implemented")
 }
@@ -327,6 +341,24 @@ type UnsafeChainServiceServer interface {
 
 func RegisterChainServiceServer(s grpc.ServiceRegistrar, srv ChainServiceServer) {
 	s.RegisterService(&ChainService_ServiceDesc, srv)
+}
+
+func _ChainService_GetBlock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BlockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChainServiceServer).GetBlock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/encservice.v1.ChainService/GetBlock",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChainServiceServer).GetBlock(ctx, req.(*BlockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _ChainService_GetBalance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -390,6 +422,10 @@ var ChainService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "encservice.v1.ChainService",
 	HandlerType: (*ChainServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetBlock",
+			Handler:    _ChainService_GetBlock_Handler,
+		},
 		{
 			MethodName: "GetBalance",
 			Handler:    _ChainService_GetBalance_Handler,
