@@ -39,7 +39,7 @@ message PendingResponse {
 
 message BlockRequest {
     bytes block_hash = 1;
-    bytes block_num = 2;
+    uint64 block_num = 2;
 }
 
 message BlockResponse {
@@ -61,11 +61,21 @@ message NonceRequest {
 }
 
 message NonceResponse {
-    bytes nonce = 1;
+    uint64 nonce = 1;
 }
 
 message LatestHeaderRequest { }
 message LatestHeaderResponse {
     bytes block_num = 1;
     bytes header_json = 2;
+}
+
+message CurrentBlockRequest {}
+message CurrentBlockResponse {
+    bytes block_data = 1;
+}
+
+message ChainHeadEventRequest {}
+message ChainHeadEventResponse {
+    bytes block_data = 1;
 }

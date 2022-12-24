@@ -1,25 +1,27 @@
 package mempool
 
 import (
+	"math/big"
 	"sync"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/state"
 )
 
 // txNoncer is a tiny virtual state database to manage the executable nonces of
 // accounts in the pool, falling back to reading from a real state database if
 // an account is unknown.
 type txNoncer struct {
-	fallback *state.StateDB
+	height *big.Int
 	nonces   map[common.Address]uint64
+	chainclient *ChainClient
 	lock     sync.Mutex
 }
 
 // newTxNoncer creates a new virtual state database to track the pool nonces.
-func newTxNoncer(statedb *state.StateDB) *txNoncer {
+func newTxNoncer(height *big.Int, chain *ChainClient) *txNoncer {
 	return &txNoncer{
-		fallback: statedb.Copy(),
+		height: height,
+		chainclient: chain,
 		nonces:   make(map[common.Address]uint64),
 	}
 }
@@ -33,7 +35,7 @@ func (txn *txNoncer) get(addr common.Address) uint64 {
 	defer txn.lock.Unlock()
 
 	if _, ok := txn.nonces[addr]; !ok {
-		txn.nonces[addr] = txn.fallback.GetNonce(addr)
+		txn.nonces[addr] = txn.chainclient.NonceAtHeight(addr, txn.height)
 	}
 	return txn.nonces[addr]
 }
@@ -54,7 +56,7 @@ func (txn *txNoncer) setIfLower(addr common.Address, nonce uint64) {
 	defer txn.lock.Unlock()
 
 	if _, ok := txn.nonces[addr]; !ok {
-		txn.nonces[addr] = txn.fallback.GetNonce(addr)
+		txn.nonces[addr] = txn.chainclient.NonceAtHeight(addr, txn.height)
 	}
 	if txn.nonces[addr] <= nonce {
 		return

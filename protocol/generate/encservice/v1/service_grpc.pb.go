@@ -256,7 +256,9 @@ type ChainServiceClient interface {
 	GetBlock(ctx context.Context, in *BlockRequest, opts ...grpc.CallOption) (*BlockResponse, error)
 	GetBalance(ctx context.Context, in *BalanceRequest, opts ...grpc.CallOption) (*BalanceResponse, error)
 	GetNonce(ctx context.Context, in *NonceRequest, opts ...grpc.CallOption) (*NonceResponse, error)
+	CurrentBlock(ctx context.Context, in *CurrentBlockRequest, opts ...grpc.CallOption) (*CurrentBlockResponse, error)
 	LatestHeader(ctx context.Context, in *LatestHeaderRequest, opts ...grpc.CallOption) (*LatestHeaderResponse, error)
+	ChainHeadEvent(ctx context.Context, in *ChainHeadEventRequest, opts ...grpc.CallOption) (ChainService_ChainHeadEventClient, error)
 }
 
 type chainServiceClient struct {
@@ -294,6 +296,15 @@ func (c *chainServiceClient) GetNonce(ctx context.Context, in *NonceRequest, opt
 	return out, nil
 }
 
+func (c *chainServiceClient) CurrentBlock(ctx context.Context, in *CurrentBlockRequest, opts ...grpc.CallOption) (*CurrentBlockResponse, error) {
+	out := new(CurrentBlockResponse)
+	err := c.cc.Invoke(ctx, "/encservice.v1.ChainService/CurrentBlock", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *chainServiceClient) LatestHeader(ctx context.Context, in *LatestHeaderRequest, opts ...grpc.CallOption) (*LatestHeaderResponse, error) {
 	out := new(LatestHeaderResponse)
 	err := c.cc.Invoke(ctx, "/encservice.v1.ChainService/LatestHeader", in, out, opts...)
@@ -303,6 +314,38 @@ func (c *chainServiceClient) LatestHeader(ctx context.Context, in *LatestHeaderR
 	return out, nil
 }
 
+func (c *chainServiceClient) ChainHeadEvent(ctx context.Context, in *ChainHeadEventRequest, opts ...grpc.CallOption) (ChainService_ChainHeadEventClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ChainService_ServiceDesc.Streams[0], "/encservice.v1.ChainService/ChainHeadEvent", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &chainServiceChainHeadEventClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type ChainService_ChainHeadEventClient interface {
+	Recv() (*ChainHeadEventResponse, error)
+	grpc.ClientStream
+}
+
+type chainServiceChainHeadEventClient struct {
+	grpc.ClientStream
+}
+
+func (x *chainServiceChainHeadEventClient) Recv() (*ChainHeadEventResponse, error) {
+	m := new(ChainHeadEventResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ChainServiceServer is the server API for ChainService service.
 // All implementations must embed UnimplementedChainServiceServer
 // for forward compatibility
@@ -310,7 +353,9 @@ type ChainServiceServer interface {
 	GetBlock(context.Context, *BlockRequest) (*BlockResponse, error)
 	GetBalance(context.Context, *BalanceRequest) (*BalanceResponse, error)
 	GetNonce(context.Context, *NonceRequest) (*NonceResponse, error)
+	CurrentBlock(context.Context, *CurrentBlockRequest) (*CurrentBlockResponse, error)
 	LatestHeader(context.Context, *LatestHeaderRequest) (*LatestHeaderResponse, error)
+	ChainHeadEvent(*ChainHeadEventRequest, ChainService_ChainHeadEventServer) error
 	mustEmbedUnimplementedChainServiceServer()
 }
 
@@ -327,8 +372,14 @@ func (UnimplementedChainServiceServer) GetBalance(context.Context, *BalanceReque
 func (UnimplementedChainServiceServer) GetNonce(context.Context, *NonceRequest) (*NonceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNonce not implemented")
 }
+func (UnimplementedChainServiceServer) CurrentBlock(context.Context, *CurrentBlockRequest) (*CurrentBlockResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CurrentBlock not implemented")
+}
 func (UnimplementedChainServiceServer) LatestHeader(context.Context, *LatestHeaderRequest) (*LatestHeaderResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LatestHeader not implemented")
+}
+func (UnimplementedChainServiceServer) ChainHeadEvent(*ChainHeadEventRequest, ChainService_ChainHeadEventServer) error {
+	return status.Errorf(codes.Unimplemented, "method ChainHeadEvent not implemented")
 }
 func (UnimplementedChainServiceServer) mustEmbedUnimplementedChainServiceServer() {}
 
@@ -397,6 +448,24 @@ func _ChainService_GetNonce_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ChainService_CurrentBlock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CurrentBlockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChainServiceServer).CurrentBlock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/encservice.v1.ChainService/CurrentBlock",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChainServiceServer).CurrentBlock(ctx, req.(*CurrentBlockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ChainService_LatestHeader_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(LatestHeaderRequest)
 	if err := dec(in); err != nil {
@@ -413,6 +482,27 @@ func _ChainService_LatestHeader_Handler(srv interface{}, ctx context.Context, de
 		return srv.(ChainServiceServer).LatestHeader(ctx, req.(*LatestHeaderRequest))
 	}
 	return interceptor(ctx, in, info, handler)
+}
+
+func _ChainService_ChainHeadEvent_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ChainHeadEventRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ChainServiceServer).ChainHeadEvent(m, &chainServiceChainHeadEventServer{stream})
+}
+
+type ChainService_ChainHeadEventServer interface {
+	Send(*ChainHeadEventResponse) error
+	grpc.ServerStream
+}
+
+type chainServiceChainHeadEventServer struct {
+	grpc.ServerStream
+}
+
+func (x *chainServiceChainHeadEventServer) Send(m *ChainHeadEventResponse) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 // ChainService_ServiceDesc is the grpc.ServiceDesc for ChainService service.
@@ -435,10 +525,20 @@ var ChainService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ChainService_GetNonce_Handler,
 		},
 		{
+			MethodName: "CurrentBlock",
+			Handler:    _ChainService_CurrentBlock_Handler,
+		},
+		{
 			MethodName: "LatestHeader",
 			Handler:    _ChainService_LatestHeader_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "ChainHeadEvent",
+			Handler:       _ChainService_ChainHeadEvent_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "encservice/v1/service.proto",
 }

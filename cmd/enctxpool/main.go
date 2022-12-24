@@ -47,6 +47,7 @@ func main() {
 
 func startNode(ctx *cli.Context) error{
 	log.Info("start node")
+	node :=
 	service.StartEncService()
 	return nil
 }

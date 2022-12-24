@@ -20,5 +20,7 @@ service ChainService {
     rpc GetBlock(BlockRequest) returns (BlockResponse) {}
     rpc GetBalance(BalanceRequest) returns (BalanceResponse) {}
     rpc GetNonce(NonceRequest) returns (NonceResponse) {}
+    rpc CurrentBlock(CurrentBlockRequest) returns (CurrentBlockResponse) {}
     rpc LatestHeader(LatestHeaderRequest) returns (LatestHeaderResponse) {}
+    rpc ChainHeadEvent(ChainHeadEventRequest) returns (stream ChainHeadEventResponse) {}
 }
